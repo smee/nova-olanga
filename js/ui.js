@@ -242,14 +242,16 @@ function createButton(container, key, label, allowSort, category) {
         btn.appendChild(grip);
     }
     
+    let pressTimer;
+    let startX = 0, startY = 0;
+    let longPressFired = false;
+    
     btn.onclick = (e) => {
         if(btn.classList.contains('dragging')) return;
+        if (longPressFired) { longPressFired = false; return; }
         window.handleDrillClick(key, btn);
     };
 
-    let pressTimer;
-    let startX = 0, startY = 0;
-    
     const start = (e) => {
         if (e.target.closest('.drill-grab-handle')) return;
         if(btn.classList.contains('running')) return;
@@ -262,13 +264,15 @@ function createButton(container, key, label, allowSort, category) {
             startY = e.clientY;
         }
 
+        longPressFired = false;
         pressTimer = setTimeout(() => {
+            longPressFired = true;
             if (navigator.vibrate) navigator.vibrate(50);
             openEditor(key);
         }, 600);
     };
 
-    const cancel = () => clearTimeout(pressTimer);
+    const cancel = () => { clearTimeout(pressTimer); longPressFired = false; };
 
     const move = (e) => {
         if (!pressTimer) return;
